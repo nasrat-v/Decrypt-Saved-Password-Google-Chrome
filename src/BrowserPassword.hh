@@ -53,6 +53,7 @@ public:
 	void					printPassword();
 	const std::vector<t_loginConnection>	&getBrowserInfo() const;
 	bool					passwordIsEmpty();
+	void					getBrowserPassword();
 
 private:
 	// Methods
