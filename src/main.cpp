@@ -1,5 +1,3 @@
-#pragma comment(lib, "crypt32.lib")
-#pragma comment(lib, "sqlite3.lib")
 
 #include "BrowserPassword.hh"
 
