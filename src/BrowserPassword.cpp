@@ -1,4 +1,5 @@
-# define QUERY "SELECT origin_url, username_value, length(password_value), password_value FROM logins"
+
+#include "BrowserPassword.hh"
 
 bool isBrowserInstalled(const char *regKeyPath) 
 { 
