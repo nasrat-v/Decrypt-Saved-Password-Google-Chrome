@@ -2,7 +2,7 @@
 #include "BrowserPassword.hh"
 
 BrowserPassword::BrowserPassword() : _hKey { HKEY_LOCAL_MACHINE, 
-											 HKEY_CURRENT_USER }
+					     HKEY_CURRENT_USER }
 {
 	_ready = false;
 }
@@ -130,9 +130,9 @@ const char *BrowserPassword::uncryptData(BYTE *password, int size)
 { 
 	DATA_BLOB in; 
 	DATA_BLOB out;
-
-    in.pbData = password;
-    in.cbData = size + 1; 
+	
+	in.pbData = password;
+	in.cbData = size + 1; 
 	if (CryptUnprotectData(&in, NULL, NULL, NULL, NULL, 0, &out))  
 	{ 
 		out.pbData[out.cbData] = 0; // set zero terminator '\0' 
