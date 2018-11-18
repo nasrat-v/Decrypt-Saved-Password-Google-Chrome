@@ -5,14 +5,14 @@ int main(int ac, const char **av)
 {
 	BrowserPassword core;
 
-	Log::logSomething("\n[Start new analyse]\n");
+	Log::logSomething("\n[Start new analyse]");
 	// Chrome
 	core.setBrowserType(BrowserPassword::BrowserType::CHROME);
-	Log::logSomething("Launch Chrome analyse...");
+	Log::logSomething("\n\\ Launch Chrome analyse /");
 	core.databaseSpying();
 	// Opera
 	core.setBrowserType(BrowserPassword::BrowserType::OPERA);
-	Log::logSomething("Launch Opera analyse...");
+	Log::logSomething("\n\\ Launch Opera analyse /");
 	core.databaseSpying();
 	Log::logSomething("\n[Analyse terminated]\n");
 	return (0);
