@@ -6,7 +6,7 @@
 # define LOGFILE_PATH   "log.txt"
 # define PASSWORD_PATH	"password.txt"
 
-static bool		_tryStatus;
+static bool _tryStatus;
 
 class Log
 {
