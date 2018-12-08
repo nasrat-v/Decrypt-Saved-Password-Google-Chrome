@@ -1,4 +1,4 @@
-# chrome_engine_browser_password_stealer
+# Decrypt-Saved-Password-Google-Chrome
 Steal and decrypt registered password from chrome engine browser
 
 ### Platform supported
