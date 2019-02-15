@@ -1,0 +1,45 @@
+﻿OpenSSL-1.1.1-pre10-dev
+
+	dll
+		Win32
+			Debug
+				bin
+				include
+				lib
+			Release
+				bin
+				include
+				lib 
+		x64
+			Debug
+				bin
+				include
+				lib
+			Release
+				bin
+				include
+				lib
+	
+	static
+		Win32
+			Debug
+				bin
+				include
+				lib
+			Release
+				bin
+				include
+				lib
+			
+		x64
+			Debug
+				bin
+				include
+				lib
+			Release
+				bin
+				include
+				lib
+			
+	ssl
+	

@@ -19,7 +19,13 @@ public:
 	ManageProcess();
 	~ManageProcess();
 
+#ifdef _UNICODE
 	void		checkBrowserProcess(const wchar_t *processName);
+#elif UNICODE
+	void		checkBrowserProcess(const wchar_t *processName);
+#else // ANSI
+	void		checkBrowserProcess(const char *processName);
+#endif /* _UNICODE */
 
 private:
 	/* Attributes */
@@ -28,12 +34,20 @@ private:
 		DWORD	id;
 		HANDLE	handle;
 		HWND	mainWindowHandle;
-	}		t_processData;
+	}			t_processData;
 
 	std::vector<t_processData> _processesToStop;
 
 	/* Methods */
+
+#ifdef _UNICODE
 	void			findProcesses(const wchar_t *processName);
+#elif UNICODE
+	void			findProcesses(const wchar_t *processName);
+#else // ANSI
+	void			findProcesses(const char *processName);
+#endif /* _UNICODE */
+
 	void			findProcessMainWindow();
 	void			killProcesses();
 	bool			killProcessByTerminate(t_processData &process);

