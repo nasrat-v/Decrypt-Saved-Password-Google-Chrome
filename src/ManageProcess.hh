@@ -19,9 +19,7 @@ public:
 	ManageProcess();
 	~ManageProcess();
 
-#ifdef _UNICODE
-	void		checkBrowserProcess(const wchar_t *processName);
-#elif UNICODE
+#ifdef _UNICODE | UNICODE
 	void		checkBrowserProcess(const wchar_t *processName);
 #else // ANSI
 	void		checkBrowserProcess(const char *processName);
@@ -40,9 +38,7 @@ private:
 
 	/* Methods */
 
-#ifdef _UNICODE
-	void			findProcesses(const wchar_t *processName);
-#elif UNICODE
+#ifdef _UNICODE | UNICODE
 	void			findProcesses(const wchar_t *processName);
 #else // ANSI
 	void			findProcesses(const char *processName);
