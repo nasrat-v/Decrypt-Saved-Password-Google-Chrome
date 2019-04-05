@@ -5,9 +5,7 @@ ManageProcess::ManageProcess() = default;
 
 ManageProcess::~ManageProcess() = default;
 
-#ifdef _UNICODE
-void		ManageProcess::checkBrowserProcess(const wchar_t *processName)
-#elif UNICODE
+#ifdef _UNICODE | UNICODE
 void		ManageProcess::checkBrowserProcess(const wchar_t *processName)
 #else // ANSI
 void		ManageProcess::checkBrowserProcess(const char *processName)
@@ -25,9 +23,7 @@ void		ManageProcess::checkBrowserProcess(const char *processName)
 		Log::logInfoMsg("No process found");
 }
 
-#ifdef _UNCODE
-void			 ManageProcess::findProcesses(const wchar_t *processName)
-#elif UNICODE
+#ifdef _UNCODE | UNICODE
 void			 ManageProcess::findProcesses(const wchar_t *processName)
 #else // ANSI
 void			 ManageProcess::findProcesses(const char *processName)
