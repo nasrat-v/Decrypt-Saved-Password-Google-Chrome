@@ -1,5 +1,5 @@
 # Decrypt-Saved-Password-Google-Chrome
-Steal and decrypt registered password from chrome engine browser.
+Steal and decrypt registered password from chromium browser.
 
 ## Library
 This project use sqliteDB https://sqlitebrowser.org/
